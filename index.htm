@@ -1,15 +1,24 @@
 <!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test</title>
-</head>
-<body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Universe manager</title>
+  </head>
+  <body>
     <h1>This is universe manager</h1>
-    <input type="checkbox" name="Life" id="life">
-    <label for="Life">Life</label>
-    <script src="main.js">
-    </script>
-</body>
+    <form>
+      <input type="checkbox" name="Life" id="life" />
+      <label for="Life">Life</label>
+      <div id="radios">
+        <input type="radio" name="deleteO2" id="deleteO2" />
+        <label for="deleteO2">Delete O2</label>
+        <input type="radio" name="deleteC" id="deleteC" />
+        <label for="deleteC">Delete carbon</label>
+      </div>
+      <input type="submit" value="Save and apply modification" />
+    </form>
+    <script src="main.js"></script>
+  </body>
 </html>

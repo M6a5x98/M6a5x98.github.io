@@ -1,0 +1,15 @@
+h1 {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 1rem;
+}
+
+h1:hover {
+    color: red;
+    transition: 0.5s;
+}
+
+form {
+    border: 1px pink solid;
+    border-radius: 20px;
+    padding: 10px;
+}
