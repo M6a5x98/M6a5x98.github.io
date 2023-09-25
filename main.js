@@ -5,6 +5,6 @@ document.querySelector("form").addEventListener("submit", (e) => {
     "<h3>Universe managing operation has been a success</h3>";
   } else if (!e.target[0].selected) {
     alert("Destroying")
-    document.querySelector("body").style="background:url()"
+    document.querySelector("body").style="background:url('./assets/IMG_3135.gif)"
   }
 });
