@@ -1,16 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ed timing</title>
-</head>
-<body>
+  </head>
+  <body>
     <form id="form">
-        <label for="test">Entrez votre nom d'utilisateur</label>
-        <input type="text" name="test" id="textt" placeholder="Username">
-        <label for="pass">Entrez votre mot de passe</label>
-        <input type="password" name="pass" id="passs" placeholder="Password">
+      <label for="test">Entrez votre nom d'utilisateur</label>
+      <input type="text" name="test" id="textt" placeholder="Username" />
+      <label for="pass">Entrez votre mot de passe</label>
+      <input type="password" name="pass" id="passs" placeholder="Password" />
+      <input type="submit" value="Se connecter" />
     </form>
-</body>
+    <script>
+      document.querySelector("form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const u = e.target[0]["value"];
+        const p = e.target[1]["value"];
+        const date = new Date().getFullYear+"-"+new Date().getMonth()+"-"+new Date().getDay()
+
+        const res = await fetch("https://api.ecoldirecte.com/v3/login.awp", {
+          method: "POST",
+          body:
+            "data=" +
+            JSON.stringify({
+              identifiant: u,
+              motdepasse: p,
+              isRelogin: false,
+              uuid: "",
+            }),
+        });
+        const response = await res.json();
+        const token = response.token;
+        const id = response.data.id;
+
+        const headers = new Headers()
+        headers.append("X-Token", token)
+        const res2 = await fetch(
+          "https://api.ecoldirecte.com/v3/E/" + id + "/emploidutemps.awp",
+          {
+            method: "POST",
+            body:
+              "data=" +
+              JSON.stringify({
+                dateDebut: date,
+                dateFin: date,
+                avecTrous: false,
+              }),
+              headers: headers
+          }
+        );
+        const response2 = await res2.json()
+      });
+
+      /*For Ipad Developement:
+             =, [], >*/
+    </script>
+  </body>
 </html>
