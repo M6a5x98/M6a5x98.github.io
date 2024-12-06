@@ -8,11 +8,12 @@
   <body>
     <form id="form">
       <label for="test">Entrez votre nom d'utilisateur</label>
-      <input type="text" name="test" id="textt" placeholder="Username" />
+      <input type="text" name="test" id="textt" placeholder="Username" /><br />
       <label for="pass">Entrez votre mot de passe</label>
-      <input type="password" name="pass" id="passs" placeholder="Password" />
+      <input type="password" name="pass" id="passs" placeholder="Password" /><br>
       <input type="submit" value="Se connecter" />
     </form>
+    <section></section>
     <script>
       document.querySelector("form").addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -20,7 +21,7 @@
         const p = e.target[1]["value"];
         const date = new Date().getFullYear+"-"+new Date().getMonth()+"-"+new Date().getDay()
 
-        const res = await fetch("https://api.ecoldirecte.com/v3/login.awp", {
+        const res = await fetch("https://api.ecoledirecte.com/v3/login.awp", {
           method: "POST",
           body:
             "data=" +
@@ -33,12 +34,23 @@
         });
         const response = await res.json();
         const token = response.token;
+
+        const A2FGETRequest = await fetch("https://api.ecoledirecte.com/v3/connexion/doubleauth.awp?verbe=get", {
+          method: "POST",
+          body:"data={}",
+          headers: {"X-Token":token}
+        })
+        const A2FGETResponse = await A2FGETRequest.json()
+        const question = `<p>${atob(A2FGETResponse.data.question)}</p>`
+        const answers = A2FGETResponse.data.propositions.map(e => `<option value="${e}">${atob(e)}</option>`).join("")
+        document.querySelector("section").innerHTML = `${question}<select>${answers}</select><br /><br /><button id="confirm-select" onclick="for (let i = 0; i<document.querySelector('select').children.length;i++) {if (document.querySelector('select').children.item(i).selected) {alert(atob(document.querySelector('select').children.item(i).value))}}">OK</button>`
+/*
         const id = response.data.id;
 
         const headers = new Headers()
         headers.append("X-Token", token)
         const res2 = await fetch(
-          "https://api.ecoldirecte.com/v3/E/" + id + "/emploidutemps.awp",
+          "https://api.ecoledirecte.com/v3/E/" + id + "/emploidutemps.awp",
           {
             method: "POST",
             body:
@@ -52,10 +64,10 @@
           }
         );
         const response2 = await res2.json()
+        */
       });
 
-      /*For Ipad Developement:
-             =, [], >*/
+      
     </script>
   </body>
 </html>
