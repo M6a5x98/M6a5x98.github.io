@@ -10,16 +10,72 @@
       <label for="test">Entrez votre nom d'utilisateur</label>
       <input type="text" name="test" id="textt" placeholder="Username" /><br />
       <label for="pass">Entrez votre mot de passe</label>
-      <input type="password" name="pass" id="passs" placeholder="Password" /><br>
+      <input
+        type="password"
+        name="pass"
+        id="passs"
+        placeholder="Password"
+      /><br />
       <input type="submit" value="Se connecter" />
     </form>
     <section></section>
     <script>
+      function err(body) {
+        if (body.code === 200 || body.code === 250) return;
+        alert(body.message);
+        sessionStorage.clear();
+        location.reload();
+      }
+      async function A2F(answer) {
+        const A2FPOSTRequest = await fetch(
+          "https://api.ecoledirecte.com/v3/connexion/doubleauth.awp?verbe=post",
+          {
+            method: "POST",
+            headers: { "X-Token": sessionStorage.getItem("Math") },
+            body: `data=${JSON.stringify({ choix: answer })}`,
+          }
+        );
+        const A2FPOSTResponse = await A2FPOSTRequest.json();
+        err(A2FPOSTResponse);
+        sessionStorage.setItem("Math", A2FPOSTResponse.token);
+        const LoginRequest = await fetch(
+          "https://api.ecoledirecte.com/v3/login.awp",
+          {
+            method: "POST",
+            body: `data=${JSON.stringify({
+              identifiant: sessionStorage.getItem("rnd").split(",")[0],
+              motdepasse: sessionStorage.getItem("rnd").split(",")[1],
+              isRelogin: false,
+              // cn: A2FPOSTResponse.data.cn,
+              // cv: A2FPOSTResponse.data.cv,
+              uuid: "",
+              fa: [A2FPOSTResponse.data],
+            })}`,
+          }
+        );
+        const LoginResponse = await LoginRequest.json();
+        err(LoginResponse);
+        alert(LoginResponse.data.accounts[0].prenom);
+      }
+      function decodeBase64(base64String) {
+        const binaryString = atob(base64String);
+        const byteArray = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          byteArray[i] = binaryString.charCodeAt(i);
+        }
+        return new TextDecoder().decode(byteArray);
+      }
       document.querySelector("form").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const u = e.target[0]["value"];
-        const p = e.target[1]["value"];
-        const date = new Date().getFullYear+"-"+new Date().getMonth()+"-"+new Date().getDay()
+        const u = encodeURIComponent(e.target[0]["value"]);
+        const p = encodeURIComponent(e.target[1]["value"]);
+        sessionStorage.setItem("rnd", `${u},${p}`);
+        const date =
+          new Date().getFullYear +
+          "-" +
+          new Date().getMonth() +
+          "-" +
+          new Date().getDay();
 
         const res = await fetch("https://api.ecoledirecte.com/v3/login.awp", {
           method: "POST",
@@ -33,18 +89,38 @@
             }),
         });
         const response = await res.json();
+        err(response);
         const token = response.token;
+        sessionStorage.setItem("Math", token);
 
-        const A2FGETRequest = await fetch("https://api.ecoledirecte.com/v3/connexion/doubleauth.awp?verbe=get", {
-          method: "POST",
-          body:"data={}",
-          headers: {"X-Token":token}
-        })
-        const A2FGETResponse = await A2FGETRequest.json()
-        const question = `<p>${atob(A2FGETResponse.data.question)}</p>`
-        const answers = A2FGETResponse.data.propositions.map(e => `<option value="${e}">${atob(e)}</option>`).join("")
-        document.querySelector("section").innerHTML = `${question}<select>${answers}</select><br /><br /><button id="confirm-select" onclick="for (let i = 0; i<document.querySelector('select').children.length;i++) {if (document.querySelector('select').children.item(i).selected) {alert(atob(document.querySelector('select').children.item(i).value))}}">OK</button>`
-/*
+        const A2FGETRequest = await fetch(
+          "https://api.ecoledirecte.com/v3/connexion/doubleauth.awp?verbe=get",
+          {
+            method: "POST",
+            body: "data={}",
+            headers: { "X-Token": token },
+          }
+        );
+        const A2FGETResponse = await A2FGETRequest.json();
+        err(A2FGETResponse);
+        const question = `<p>${decodeBase64(A2FGETResponse.data.question)}</p>`;
+        const answers = A2FGETResponse.data.propositions
+          .map((e) => `<option value="${e}">${decodeBase64(e)}</option>`)
+          .join("");
+        document.querySelector("section").innerHTML = `
+        ${question}
+        <select>${answers}</select>
+        <br /><br />
+        <button id="confirm-select" onclick="
+        (async () => {
+          for (let i = 0; i < document.querySelector('select').children.length ; i++) {
+            if (document.querySelector('select').children.item(i).selected) {
+              await A2F(document.querySelector('select').children.item(i).value)
+              }
+          }
+        })()
+        ">OK</button>`;
+        /*
         const id = response.data.id;
 
         const headers = new Headers()
@@ -66,8 +142,6 @@
         const response2 = await res2.json()
         */
       });
-
-      
     </script>
   </body>
 </html>
