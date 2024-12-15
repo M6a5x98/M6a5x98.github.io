@@ -1,26 +1,101 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ed timing</title>
   </head>
   <body>
+    <style>
+      form {
+        display: grid;
+        grid-template-columns: 15fr 1fr 15fr;
+        grid-template-rows: 0.6fr 1fr 1fr 1fr;
+      }
+      * {
+        font-family: Arial, sans-serif;
+        font-size: 0.9rem;
+      }
+      input {
+        border: 1px solid black;
+        border-radius: 15px;
+        padding: 0.5vw;
+      }
+      input[type="submit"] {
+        margin-top: 1vh;
+        grid-column: span 3;
+        cursor: pointer;
+        border: solid 1px white;
+        border-radius: 5px;
+        color: white;
+        background-color: rebeccapurple;
+        transition: 0.5s ease-out;
+      }
+      input[type="submit"]:hover {
+        border-radius: 5px;
+        border: solid 1px black;
+        border-radius: 5px;
+        background-color: chartreuse;
+        color: black;
+        transition: 0.5s ease-in;
+      }
+      div#A2F-shadow {
+        display: flex;
+        justify-content: center;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+      }
+      div#A2F-shadow.show {
+        opacity: 0.8;
+        z-index: 10;
+      }
+      div#A2F-shadow.hide {
+        z-index: -10;
+        opacity: 0;
+      }
+      section#A2F-container {
+        height: fit-content;
+        display: grid;
+        grid-template-rows: 1fr 0.5fr 0.5fr 0.5fr;
+      }
+      section#A2F-container > p {
+        color: white;
+      }
+    </style>
     <form id="form">
-      <label for="test">Entrez votre nom d'utilisateur</label>
-      <input type="text" name="test" id="textt" placeholder="Username" /><br />
+      <label for="username">Entrez votre nom d'utilisateur</label>
+      <br />
       <label for="pass">Entrez votre mot de passe</label>
+      <input
+        type="text"
+        name="username"
+        id="textt"
+        placeholder="Nom d'utilisateur"
+        autocomplete="username"
+      />
+      <br />
       <input
         type="password"
         name="pass"
         id="passs"
-        placeholder="Password"
-      /><br />
+        placeholder="Mot de passe"
+        autocomplete="current-password"
+      />
       <input type="submit" value="Se connecter" />
     </form>
-    <section></section>
+    <div id="A2F-shadow" class="hide">
+      <section id="A2F-container"></section>
+    </div>
     <script>
       function err(body) {
+        sessionStorage.setItem(
+          "Math",
+          body.token ?? sessionStorage.getItem("Math")
+        );
         if (body.code === 200 || body.code === 250) return;
         alert(body.message);
         sessionStorage.clear();
@@ -46,8 +121,6 @@
               identifiant: sessionStorage.getItem("rnd").split(",")[0],
               motdepasse: sessionStorage.getItem("rnd").split(",")[1],
               isRelogin: false,
-              // cn: A2FPOSTResponse.data.cn,
-              // cv: A2FPOSTResponse.data.cv,
               uuid: "",
               fa: [A2FPOSTResponse.data],
             })}`,
@@ -55,7 +128,10 @@
         );
         const LoginResponse = await LoginRequest.json();
         err(LoginResponse);
-        alert(LoginResponse.data.accounts[0].prenom);
+        //alert(LoginResponse.data.accounts[0].prenom);
+        sessionStorage.setItem("di", LoginResponse.data.accounts[0].id);
+        document.querySelector("div#A2F-shadow").className = "hide";
+        await GetTT();
       }
       function decodeBase64(base64String) {
         const binaryString = atob(base64String);
@@ -70,12 +146,6 @@
         const u = encodeURIComponent(e.target[0]["value"]);
         const p = encodeURIComponent(e.target[1]["value"]);
         sessionStorage.setItem("rnd", `${u},${p}`);
-        const date =
-          new Date().getFullYear +
-          "-" +
-          new Date().getMonth() +
-          "-" +
-          new Date().getDay();
 
         const res = await fetch("https://api.ecoledirecte.com/v3/login.awp", {
           method: "POST",
@@ -103,30 +173,40 @@
         );
         const A2FGETResponse = await A2FGETRequest.json();
         err(A2FGETResponse);
+        document.querySelector("div#A2F-shadow").className = "show";
         const question = `<p>${decodeBase64(A2FGETResponse.data.question)}</p>`;
         const answers = A2FGETResponse.data.propositions
           .map((e) => `<option value="${e}">${decodeBase64(e)}</option>`)
           .join("");
-        document.querySelector("section").innerHTML = `
+        document.querySelector("section#A2F-container").innerHTML = `
         ${question}
         <select>${answers}</select>
-        <br /><br />
+        <br />
         <button id="confirm-select" onclick="
         (async () => {
           for (let i = 0; i < document.querySelector('select').children.length ; i++) {
             if (document.querySelector('select').children.item(i).selected) {
               await A2F(document.querySelector('select').children.item(i).value)
-              }
+            }
           }
         })()
         ">OK</button>`;
-        /*
-        const id = response.data.id;
+      });
+      async function GetTT() {
+        const date =
+          new Date().getFullYear() +
+          "-" +
+          (new Date().getMonth() + 1).toString() +
+          "-" +
+          new Date().getDate();
+        const id = sessionStorage.getItem("di");
 
-        const headers = new Headers()
-        headers.append("X-Token", token)
+        const headers = new Headers();
+        headers.append("X-Token", sessionStorage.getItem("Math"));
         const res2 = await fetch(
-          "https://api.ecoledirecte.com/v3/E/" + id + "/emploidutemps.awp",
+          "https://api.ecoledirecte.com/v3/E/" +
+            id +
+            "/emploidutemps.awp?verbe=get",
           {
             method: "POST",
             body:
@@ -136,12 +216,36 @@
                 dateFin: date,
                 avecTrous: false,
               }),
-              headers: headers
+            headers: headers,
           }
         );
-        const response2 = await res2.json()
-        */
-      });
+        const response2 = await res2.json();
+        err(response2);
+        const responseWithoutCancelledClasses = response2.data.filter(
+          (e) => !e.isAnnule
+        );
+        if (responseWithoutCancelledClasses.length > 0) {
+          const EndDate = responseWithoutCancelledClasses
+            .map((e) => e.end_date)
+            .sort((a, b) => new Date(a) - new Date(b))
+            .sort(
+              (a, b) =>
+                Math.abs(Date.now() - new Date(a)) -
+                Math.abs(Date.now() - new Date(b))
+            )[0];
+          alert(
+            "Votre cours se finit " +
+              new Date(EndDate).toLocaleDateString("fr-FR", {
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+          );
+        } else {
+          alert("Vous n'avez pas cours aujourd'hui");
+        }
+      }
     </script>
   </body>
 </html>
