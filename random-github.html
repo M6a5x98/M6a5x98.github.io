@@ -1,12 +1,57 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <title>Random Github Things</title>
+  </head>
 
-<head>
-    <title>Random Github Profile Picture</title>
-</head>
-
-<body>
-    <img src="https://cataas.com/cat"
-        onload="document.querySelector('img').src = 'https://avatars.githubusercontent.com/u/'+Math.round(Math. random()*10**6)">
-</body>
+  <body>
+    <div>
+      <button type="button" id="PP">Profile Pictures</button>
+      <button type="button" id="UT">User tree</button>
+    </div>
+    <script>
+      function PP() {
+        document.querySelector(
+          "div"
+        ).innerHTML = `<img src="https://cataas.com/cat"
+        onload="document.querySelector('img').src = 'https://avatars.githubusercontent.com/u/'+Math.round(Math. random()*10**6)">`;
+      }
+      document.getElementById("PP").onclick = PP;
+      async function UE() {
+        let O = prompt("User ?") ?? "";
+        if (O === "") O = "torvalds";
+        else {
+          const response = await fetch(`https://api.github.com/users/${O}`);
+          if (response.status === 404) {
+            alert("User doesn't exist");
+            throw new Error("User doesn't exist");
+          }
+        }
+        let ICanMakeRequestsBecauseIAmNotRateLimited = true;
+        let users = [O];
+        let founds = [];
+        while (ICanMakeRequestsBecauseIAmNotRateLimited && users.length > 0) {
+          if (founds.includes(users[0])) continue;
+          const response = await fetch(
+            `https://api.github.com/users/${users[0]}/following`
+          );
+          if (response.status !== 200) {
+            ICanMakeRequestsBecauseIAmNotRateLimited = false;
+            alert("Rate Limit Reached");
+            return;
+          }
+          const result = await response.json();
+          result.forEach((e) => {
+            document.querySelector("div").innerHTML += `<p>${e.login}</p>`;
+            users.push(e.login);
+            founds.push(e.login);
+          });
+          users.shift();
+        }
+      }
+      document.getElementById("UT").onclick = async () => {
+        await UE();
+      };
+    </script>
+  </body>
 </html>
