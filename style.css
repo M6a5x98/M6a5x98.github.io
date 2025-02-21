@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+* {
+  font-family: Inter, Verdana;
+}
+.link::after {
+  content: "->";
+  font-size: 1rem;
+  vertical-align: top;
+  display: inline-block;
+  transform: rotate(-45deg);
+  color: var(--color);
+}
+.link:hover {
+  --color: purple;
+}
+.link {
+  --color: blue;
+  text-decoration: none;
+  color: black;
+}
+.warning {
+  border: 2px yellow solid;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 1fr 9fr;
+  align-items: center;
+}
+.warning::before {
+  content: "⚠️";
+  margin-left: 5vw;
+}
+.subtitle {
+  font-size: 0.7rem;
+}
+.warning:first-child {
+  text-align: center;
+}
