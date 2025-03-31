@@ -29,6 +29,7 @@
   grid-template-rows: 1fr 0fr 0.5fr;
   grid-template-columns: 1fr 9fr;
   align-items: center;
+  margin-bottom: 2vh;
 }
 
 .warning::before {
@@ -42,4 +43,8 @@
 
 .warning:first-child {
   text-align: center;
+}
+
+.project {
+  border: 3px var(--color) solid;
 }
