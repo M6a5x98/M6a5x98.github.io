@@ -23,13 +23,14 @@
   color: black;
 }
 
-.warning {
+.warning, .project {
   border: 2px yellow solid;
   display: grid;
-  grid-template-rows: 1fr 0fr 0.5fr;
+  grid-template-rows: 0.5fr 0fr 0fr;
   grid-template-columns: 1fr 9fr;
   align-items: center;
   margin-bottom: 2vh;
+  padding-bottom: 0.5vh;
 }
 
 .warning::before {
@@ -41,10 +42,29 @@
   font-size: 0.7rem;
 }
 
-.warning:first-child {
+.warning::first-child {
   text-align: center;
 }
 
 .project {
   border: 3px var(--color) solid;
 }
+
+.project::before {
+  content: "";
+}
+
+.card {
+  border: 2px var(--utility-color) solid;
+  border-radius: 10px;
+  width: 80%;
+  margin-top: 1.5vh;
+  padding: 0 2vw;
+}
+
+.card > h3 {
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+
